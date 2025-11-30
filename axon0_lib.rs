@@ -1,5 +1,8 @@
+#[path = "axon0_lib_frame.rs"]
 pub mod frame;
+#[path = "axon0_lib_song.rs"]
 pub mod song;
+#[path = "axon0_lib_tlv.rs"]
 pub mod tlv;
 
 #[cfg(test)]
