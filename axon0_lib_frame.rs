@@ -1,5 +1,7 @@
 use std::convert::TryFrom;
 
+use crate::hlc::Hlc;
+
 pub const AXON0_HEADER_LEN: usize = 32;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -57,6 +59,34 @@ pub struct SongHeader {
 }
 
 impl SongHeader {
+    /// Construct a SongHeader from an HLC and other fields
+    pub fn from_hlc(
+        ver: u8,
+        frame_type: FrameType,
+        flags: Flags,
+        payload_len: u32,
+        stream_id: u32,
+        hlc: Hlc,
+    ) -> Self {
+        Self {
+            ver,
+            frame_type,
+            flags,
+            payload_len,
+            hlc_physical_ms: hlc.physical_ms,
+            hlc_logical: hlc.logical,
+            stream_id,
+        }
+    }
+
+    /// Extract HLC from this header
+    pub fn hlc(&self) -> Hlc {
+        Hlc {
+            physical_ms: self.hlc_physical_ms,
+            logical: self.hlc_logical,
+        }
+    }
+
     pub fn encode(&self) -> [u8; AXON0_HEADER_LEN] {
         let mut buf = [0u8; AXON0_HEADER_LEN];
 
