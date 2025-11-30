@@ -138,4 +138,97 @@ mod tests {
         assert!(decoded.header.flags.has(Flags::END_OF_STREAM));
         assert_eq!(decoded.header.hlc().logical, 5); // verify HLC persisted
     }
+
+    #[test]
+    fn song_checksum_compute_and_verify() {
+        let tlvs = vec![Tlv::new(0x01, vec![1, 2, 3, 4, 5])];
+        let hlc = Hlc::new(1_735_000_000_000);
+
+        let song = Song {
+            header: SongHeader::from_hlc(0, FrameType::Hello, Flags(0), 0, 0, hlc),
+            payload: Payload::Tlv(tlvs),
+            checksum: None,
+            signature: None,
+        };
+
+        // Add checksum
+        let song_with_checksum = song.with_checksum();
+        assert!(song_with_checksum.checksum.is_some());
+        assert!(song_with_checksum.header.flags.has(Flags::CHECKSUM));
+
+        // Verify valid checksum
+        assert!(song_with_checksum.verify_checksum());
+
+        // Encode, decode, verify still valid
+        let encoded = song_with_checksum.encode();
+        let decoded = Song::decode(&encoded).unwrap();
+        assert!(decoded.verify_checksum());
+
+        // Corrupt checksum and verify fails
+        let mut corrupted = decoded.clone();
+        if let Some(ref mut checksum) = corrupted.checksum {
+            checksum[0] ^= 0xFF; // flip bits
+        }
+        assert!(!corrupted.verify_checksum());
+
+        // Corrupt payload and verify fails
+        let mut corrupted_payload = decoded.clone();
+        if let Payload::Tlv(ref mut tlvs) = corrupted_payload.payload {
+            tlvs[0].value[0] ^= 0xFF;
+        }
+        assert!(!corrupted_payload.verify_checksum());
+    }
+
+    #[test]
+    fn song_signature_sign_and_verify() {
+        use ed25519_dalek::SigningKey;
+        use rand::rngs::OsRng;
+
+        let tlvs = vec![Tlv::new(0x01, vec![0x42; 16])];
+        let hlc = Hlc::new(1_735_000_000_000);
+
+        let song = Song {
+            header: SongHeader::from_hlc(0, FrameType::Hello, Flags(0), 0, 0, hlc),
+            payload: Payload::Tlv(tlvs),
+            checksum: None,
+            signature: None,
+        };
+
+        // Generate keypair
+        let signing_key = SigningKey::generate(&mut OsRng);
+        let verifying_key = signing_key.verifying_key();
+
+        // Sign song
+        let signed_song = song.sign(&signing_key);
+        assert!(signed_song.checksum.is_some()); // signing auto-adds checksum
+        assert!(signed_song.signature.is_some());
+        assert!(signed_song.header.flags.has(Flags::SIGNATURE));
+
+        // Verify valid signature
+        assert!(signed_song.verify_signature(&verifying_key));
+
+        // Encode, decode, verify still valid
+        let encoded = signed_song.encode();
+        let decoded = Song::decode(&encoded).unwrap();
+        assert!(decoded.verify_signature(&verifying_key));
+
+        // Corrupt signature and verify fails
+        let mut corrupted = decoded.clone();
+        if let Some(ref mut sig) = corrupted.signature {
+            sig[0] ^= 0xFF;
+        }
+        assert!(!corrupted.verify_signature(&verifying_key));
+
+        // Corrupt payload and verify fails
+        let mut corrupted_payload = decoded.clone();
+        if let Payload::Tlv(ref mut tlvs) = corrupted_payload.payload {
+            tlvs[0].value[0] ^= 0xFF;
+        }
+        assert!(!corrupted_payload.verify_signature(&verifying_key));
+
+        // Wrong key and verify fails
+        let wrong_key = SigningKey::generate(&mut OsRng);
+        let wrong_verifying_key = wrong_key.verifying_key();
+        assert!(!decoded.verify_signature(&wrong_verifying_key));
+    }
 }
