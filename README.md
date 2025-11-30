@@ -32,7 +32,7 @@ AXON/0 exists to satisfy a small number of very specific goals:
 - **AI-native observability**
   AXON/0 is designed to be debugged and inspected primarily by **agents**, not by humans staring at logs.
   - The substrate is binary.
-  - "Bells" (introspection) are structured trace events that **TraceVeyr**-style mnematodes can decode, cluster, and explain.
+  - "Bells" (introspection) are structured trace events that **trace agents** can decode, cluster, and explain.
   - Humans consume stories, diagrams, and summaries, not raw packets.
 
 - **Causality-aware**
@@ -91,7 +91,7 @@ Songs are designed to be:
 
 Bells are recorded to a **trace stream** (or file) that is meant to be consumed by:
 
-- AI agents (TraceVeyr, Forensics mnematodes) that:
+- AI agents (trace agents, Forensics mnematodes) that:
   - Decode the binary format.
   - Reconstruct timelines and causal graphs.
   - Generate human-readable reports on demand.
@@ -164,7 +164,7 @@ Key principles:
 
 On top of that, we anticipate:
 
-- **TraceVeyr**: an agent that reads AXON/0 traces and produces:
+- **Trace agents**: agents that read AXON/0 traces and produce:
   - Timelines of events.
   - ASCII sequence diagrams.
   - Natural language summaries of incidents.
@@ -200,7 +200,7 @@ AXON/0 is currently in the **specification and scaffolding** phase.
 
 - [ ] Finalize frame format (header + payload types)
 - [ ] Specify handshake and discovery messages
-- [ ] Define trace (Bell) format and minimal TraceVeyr agent contract
+- [ ] Define trace (Bell) format and minimal trace agent contract
 - [ ] Implement reference Rust library for:
   - Framing
   - HLC
