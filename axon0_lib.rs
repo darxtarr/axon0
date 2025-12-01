@@ -1,3 +1,7 @@
+#[path = "axon0_lib_bell.rs"]
+pub mod bell;
+#[path = "axon0_lib_bell_file.rs"]
+pub mod bell_file;
 #[path = "axon0_lib_frame.rs"]
 pub mod frame;
 #[path = "axon0_lib_hlc.rs"]

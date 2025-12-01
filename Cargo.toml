@@ -14,6 +14,14 @@ path = "axon0_bin_demo_accept.rs"
 name = "axon0-demo-init"
 path = "axon0_bin_demo_init.rs"
 
+[[bin]]
+name = "axon0-bells-dump"
+path = "axon0_bin_bells_dump.rs"
+
+[[bin]]
+name = "axon0-bells-gen"
+path = "axon0_bin_bells_gen.rs"
+
 [dependencies]
 blake3 = "1.8"
 ed25519-dalek = { version = "2", features = ["rand_core"] }
