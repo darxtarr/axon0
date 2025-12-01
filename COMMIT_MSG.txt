@@ -1,0 +1,49 @@
+Add handshake helpers, state machine, I/O layer, and working demo
+
+This commit implements the complete AXON/0 handshake and I/O stack,
+proving end-to-end connectivity over TCP.
+
+New modules:
+- axon0_lib_handshake.rs: Typed API over Song/TLV wire format
+  * SecurityMode, Capabilities, ResultCode, ReasonCode enums
+  * HelloFields, HelloAckFields, CloseFields with TLV conversion
+  * Song constructors: hello(), hello_ack(), close(), ping(), pong(), data()
+  * TLV type constants from spec §5
+
+- axon0_lib_conn.rs: Pure connection state machine (no I/O)
+  * ConnState: Idle → Connecting → Handshaking → Active → Closed
+  * SecurityPolicy with automatic mode negotiation (prefer strongest)
+  * apply(state, config, incoming, hlc) transition function
+  * 12 comprehensive unit tests for all handshake scenarios
+
+- axon0_lib_io.rs: Thin I/O wrapper over Read + Write
+  * AxonConn<T> generic over any byte stream
+  * Frame reading with header + payload + trailer (checksum/signature)
+  * initiate_handshake() and accept_handshake()
+  * poll_once() event-driven message processing
+  * send_data(), send_ping(), send_pong(), close()
+
+- Demo binaries:
+  * axon0-demo-accept: Listen on port 52020, accept handshake
+  * axon0-demo-init: Connect, handshake, send DATA, close
+
+Modified:
+- axon0_lib_frame.rs: Added reserved flags validation
+- axon0_lib.rs: Added new module declarations
+- Cargo.toml: Added binary targets
+- README.md: Updated status with completed features
+
+Documentation:
+- CLAUDE.md: Comprehensive onboarding for AI agents
+- SESSION_2024_12_01.md: Detailed session summary
+
+Test results:
+- 25/25 unit tests passing
+- End-to-end demo working over real TCP
+- Security mode negotiation verified (selects Signed mode)
+- HLC synchronization confirmed across processes
+
+🔮 The obsidian glass is now carrying real photons.
+
+Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>

@@ -6,6 +6,12 @@ pub mod hlc;
 pub mod song;
 #[path = "axon0_lib_tlv.rs"]
 pub mod tlv;
+#[path = "axon0_lib_handshake.rs"]
+pub mod handshake;
+#[path = "axon0_lib_conn.rs"]
+pub mod conn;
+#[path = "axon0_lib_io.rs"]
+pub mod io;
 
 #[cfg(test)]
 mod tests {

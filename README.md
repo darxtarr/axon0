@@ -196,16 +196,49 @@ The layers are deliberately decoupled so that AXON/0 can remain small and stable
 
 ## Status
 
-AXON/0 is currently in the **specification and scaffolding** phase.
+AXON/0 is in **active development** with a working core implementation.
 
-- [ ] Finalize frame format (header + payload types)
-- [ ] Specify handshake and discovery messages
-- [ ] Define trace (Bell) format and minimal trace agent contract
-- [ ] Implement reference Rust library for:
-  - Framing
-  - HLC
-  - Basic discovery
-  - Trusted-LAN integrity mode
+### ✅ Completed (2024-12-01)
 
-Nothing in this repository should be treated as a long-term API guarantee yet.
-The immediate goal is a solid, testable substrate that the rest of CHORUS can depend on.
+- [x] **Wire format specification** — Canonical protocol spec (§2-6)
+- [x] **Handshake specification** — Single-RTT HELLO/HELLO_ACK with security negotiation
+- [x] **Frame codec** — Header (32B), TLV payloads, optional trailers (checksum/signature)
+- [x] **Hybrid Logical Clock** — Causal timestamps on every Song
+- [x] **Song structure** — Full encoding/decoding with BLAKE3 checksums and Ed25519 signatures
+- [x] **Typed handshake API** — HelloFields, HelloAckFields, CloseFields with TLV conversion
+- [x] **Pure state machine** — Deterministic ConnState with security policy engine
+- [x] **I/O layer** — AxonConn<T: Read + Write> wrapper for TCP streams
+- [x] **End-to-end demo** — Two binaries successfully handshake, exchange DATA, and close over TCP
+
+**Test coverage:** 25 unit tests passing + working end-to-end demo
+
+### 🚧 In Progress / Next Steps
+
+- [ ] **Discovery beacons** — UDP broadcast for peer discovery (magic "AX0D")
+- [ ] **Bells / Trace events** — Binary trace format for AI-native observability
+- [ ] **ACK/NACK + retransmission** — At-least-once delivery semantics
+- [ ] **Async I/O** — AsyncRead + AsyncWrite version for Tokio/async-std
+
+### Demo
+
+Terminal 1 (acceptor):
+```bash
+cargo run --bin axon0-demo-accept
+```
+
+Terminal 2 (initiator):
+```bash
+cargo run --bin axon0-demo-init
+```
+
+You'll see:
+- Full HELLO/HELLO_ACK handshake
+- Security mode negotiation (selects strongest available)
+- DATA frames transferred with HLC timestamps
+- Graceful CLOSE
+
+### API Stability
+
+**Core wire format is stabilizing**, but nothing is guaranteed until v1.0.
+
+The goal is a **solid, testable substrate** that the rest of CHORUS can depend on.

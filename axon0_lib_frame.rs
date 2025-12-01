@@ -41,9 +41,15 @@ impl Flags {
     pub const CHECKSUM: u8 = 0x01;
     pub const SIGNATURE: u8 = 0x02;
     pub const END_OF_STREAM: u8 = 0x04;
+    pub const RESERVED_MASK: u8 = 0xF8; // bits 3-7 must be 0
 
     pub fn has(self, bit: u8) -> bool {
         self.0 & bit != 0
+    }
+
+    /// Check if reserved bits are all zero (as required by spec §3)
+    pub fn reserved_bits_valid(self) -> bool {
+        self.0 & Self::RESERVED_MASK == 0
     }
 }
 

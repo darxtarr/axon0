@@ -6,6 +6,14 @@ edition = "2021"
 [lib]
 path = "axon0_lib.rs"
 
+[[bin]]
+name = "axon0-demo-accept"
+path = "axon0_bin_demo_accept.rs"
+
+[[bin]]
+name = "axon0-demo-init"
+path = "axon0_bin_demo_init.rs"
+
 [dependencies]
 blake3 = "1.8"
 ed25519-dalek = { version = "2", features = ["rand_core"] }
