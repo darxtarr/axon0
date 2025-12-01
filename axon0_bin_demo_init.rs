@@ -2,10 +2,14 @@
 ///
 /// Connects to 127.0.0.1:52020, completes handshake, sends a DATA Song,
 /// and closes gracefully.
+///
+/// Bells trace saved to demo-init.bells
 use std::net::TcpStream;
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
+use axon0::bell_file::FileBellSink;
 use axon0::conn::{ConnConfig, Role, SecurityPolicy};
 use axon0::handshake::{Capabilities, ReasonCode};
 use axon0::io::AxonConn;
@@ -46,8 +50,20 @@ fn main() {
         }
     };
 
-    // Create AxonConn wrapper
-    let mut conn = AxonConn::new(stream, config);
+    // Get socket addresses for Bell context
+    let local_addr = stream.local_addr().ok();
+    let peer_addr = stream.peer_addr().ok();
+
+    // Create Bell sink
+    let bell_sink = Arc::new(
+        FileBellSink::open("demo-init.bells").expect("Failed to create Bell sink"),
+    );
+    println!("Bell trace will be saved to demo-init.bells");
+
+    // Create AxonConn wrapper with Bell instrumentation
+    let mut conn = AxonConn::new(stream, config)
+        .with_bell_sink(bell_sink)
+        .with_addrs_opt(local_addr, peer_addr);
 
     // Complete handshake
     println!();

@@ -2,8 +2,12 @@
 ///
 /// Listens on port 52020, accepts one TCP connection, completes handshake,
 /// and prints information about incoming DATA Songs.
+///
+/// Bells trace saved to demo-accept.bells
 use std::net::TcpListener;
+use std::sync::Arc;
 
+use axon0::bell_file::FileBellSink;
 use axon0::conn::{ConnConfig, Role, SecurityPolicy};
 use axon0::handshake::Capabilities;
 use axon0::io::{AxonConn, AxonEvent};
@@ -40,8 +44,21 @@ fn main() {
     let (stream, addr) = listener.accept().expect("Failed to accept connection");
     println!("Accepted connection from {}", addr);
 
-    // Create AxonConn wrapper
-    let mut conn = AxonConn::new(stream, config);
+    // Get socket addresses for Bell context
+    let local_addr = stream.local_addr().ok();
+    let peer_addr = stream.peer_addr().ok();
+
+    // Create Bell sink
+    let bell_sink = Arc::new(
+        FileBellSink::open("demo-accept.bells").expect("Failed to create Bell sink"),
+    );
+    println!("Bell trace will be saved to demo-accept.bells");
+    println!();
+
+    // Create AxonConn wrapper with Bell instrumentation
+    let mut conn = AxonConn::new(stream, config)
+        .with_bell_sink(bell_sink)
+        .with_addrs_opt(local_addr, peer_addr);
 
     // Complete handshake
     println!("Starting handshake...");
